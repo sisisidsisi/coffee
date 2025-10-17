@@ -1,5 +1,5 @@
 // 🚀 Google Apps Script 웹 앱 URL 입력
-const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4v04tyTUC-BQfhf8efaRXnVMc9QatuBPsd07fjlwgJpxllD_AzTcPde7qK6nbmnbg/exec";
 
 // --------------------- 설문 전송 (기존 기능)
 const form = document.getElementById("coffeeForm");
@@ -81,3 +81,4 @@ if (recommendationContainer) {
     <p>${description}</p>
   `;
 }
+
