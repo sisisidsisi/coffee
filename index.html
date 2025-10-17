@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나에게 맞는 커피 한 잔 – 자동 설문</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header>
+    <h1>☕ 나에게 맞는 커피 한 잔</h1>
+    <p>카페인 민감도와 원두 취향 조사</p>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>설문 참여하기</h2>
+      <p>응답 후 데이터는 자동으로 Google Sheets에 저장됩니다.</p>
+
+      <form id="coffeeForm">
+        <label>1. 하루에 커피를 얼마나 마시나요?</label>
+        <select name="dailyAmount" required>
+          <option value="none">마시지 않는다</option>
+          <option value="1cup">1잔 이하</option>
+          <option value="2to3">2~3잔</option>
+          <option value="4plus">4잔 이상</option>
+          <option value="varies">일정하지 않다</option>
+        </select>
+
+        <label>2. 커피를 마신 뒤 불면이나 각성 상태를 느낀 적이 있나요?</label>
+        <input type="range" name="sensitivity" min="1" max="5" value="3" step="1">
+        <div class="scale"><span>전혀 없다</span><span>항상 느낀다</span></div>
+
+        <label>3. 자주 방문하는 커피 전문점은 어디인가요?</label>
+        <input type="text" name="favoriteCafe" placeholder="예: 스타벅스, 블루보틀" required>
+
+        <label>4. 어떤 커피 추출 방식을 선호하시나요?</label>
+        <select name="brewType" required>
+          <option value="drip">드립</option>
+          <option value="espresso">에스프레소</option>
+          <option value="coldbrew">콜드브루</option>
+          <option value="etc">기타</option>
+        </select>
+
+        <label>5. 어떤 원두를 더 선호하시나요?</label>
+        <select name="beanType" required>
+          <option value="mild">마일드</option>
+          <option value="dark">다크</option>
+          <option value="decaf">디카페인</option>
+          <option value="depends">기분이나 날씨에 따라 달라짐</option>
+        </select>
+
+        <button type="submit">제출하기</button>
+      </form>
+    </section>
+
+    <p class="link"><a href="results.html">📊 결과 보기</a></p>
+  </main>
+
+  <footer>
+    <p>© 2025 Coffee Insight Project</p>
+  </footer>
+</body>
+</html>
