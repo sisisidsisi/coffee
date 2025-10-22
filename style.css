@@ -31,13 +31,15 @@ form {
 
 label {
   font-weight: 600;
+  margin-top: 0.5rem;
 }
 
 input, select, button {
-  padding: 0.7rem;
+  padding: 0.8rem;
   border-radius: 8px;
   border: 1px solid #c7b7a4;
   font-size: 1rem;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 button {
@@ -45,11 +47,17 @@ button {
   color: #fffaf3;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background-color 0.3s;
+  margin-top: 1rem;
 }
 
 button:hover {
   background-color: #8b5e3c;
+}
+
+button:disabled {
+  background-color: #a08d7e;
+  cursor: not-allowed;
 }
 
 .scale {
@@ -57,17 +65,79 @@ button:hover {
   justify-content: space-between;
   font-size: 0.85rem;
   color: #6b4f3b;
+  padding: 0 0.2rem;
 }
 
 .link {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
+
+.link a {
+    color: #6b4f3b;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* --- 결과 페이지 스타일 --- */
+
+/* 추천 섹션 스타일 추가 */
+.recommend-box {
+  background-color: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  margin-top: 2rem;
+  border: 1px solid #f0e6d8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.recommend-box h3 {
+    margin-top: 0;
+    color: #6b4f3b;
+    border-bottom: 2px solid #f0e6d8;
+    padding-bottom: 0.8rem;
+    font-size: 1.4rem;
+}
+
+.recommend-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.recommend-content img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #f7f3ee;
+    flex-shrink: 0;
+}
+
+.recommend-content div {
+    display: flex;
+    flex-direction: column;
+}
+
+.recommend-content strong {
+    font-size: 1.25rem;
+    color: #3b2b24;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.recommend-content p {
+    margin: 0;
+    line-height: 1.7;
+    color: #5a4b44;
+}
+
 
 footer {
   text-align: center;
   background: #6b4f3b;
   color: #fffaf3;
-  padding: 1rem;
-  margin-top: 2rem;
+  padding: 1.5rem;
+  margin-top: 3rem;
 }
