@@ -1,5 +1,9 @@
-// 🚀 1. 여기에 Google Apps Script로 배포한 웹 앱 URL을 붙여넣으세요.
+// 🚀 1. 설문 제출용 Google Apps Script 웹 앱 URL을 붙여넣으세요.
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKa1UJRqVGHjWG7y1rPE6QGP5xIzg4d0HM3gG7wfiw46ou6BSbGtjvOsfqVwwB8-zR/exec";
+
+// 🚀 2. 설문 결과를 읽어오는 용도의 Google Apps Script 웹 앱 URL을 붙여넣으세요.
+// (새로 배포해야 합니다. 아래 Code.gs의 doGet 함수를 참고하세요.)
+const GOOGLE_SCRIPT_DATA_URL = "https://script.google.com/macros/s/AKfycbwKa1UJRqVGHjWG7y1rPE6QGP5xIzg4d0HM3gG7wfiw46ou6BSbGtjvOsfqVwwB8-zR/exec"; // 설문 제출 URL과 동일해도 되지만, doGet을 위해 재배포 필요.
 
 // --- 설문 제출 로직 (index.html 용) ---
 const form = document.getElementById("coffeeForm");
@@ -45,8 +49,7 @@ if (form) {
 }
 
 
-// --- 결과 페이지 추천 로직 (results.html 용) ---
-// 현재 페이지가 results.html일 때만 아래 코드를 실행합니다.
+// --- 결과 페이지 로직 (results.html 용) ---
 if (window.location.pathname.includes("results.html")) {
   
   // URL의 쿼리 파라미터에서 sensitivity 값을 가져오는 함수
@@ -99,12 +102,96 @@ if (window.location.pathname.includes("results.html")) {
           </div>
         </div>
       `;
-      // 생성된 HTML을 추천 영역에 삽입합니다.
       container.innerHTML = contentHTML;
     }
   };
-  
-  // HTML 문서 로딩이 완료되면 추천 함수를 실행합니다.
-  window.addEventListener("DOMContentLoaded", renderRecommendation);
-}
 
+  // 설문 결과를 가져와서 HTML에 렌더링하는 함수
+  const renderSurveyResults = async () => {
+    const resultsContainer = document.getElementById("survey-results-summary");
+    if (!resultsContainer) return;
+
+    try {
+      const response = await fetch(GOOGLE_SCRIPT_DATA_URL, {
+        method: "GET",
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+
+      if (data.status === "success" && data.data) {
+        // 데이터 처리 및 요약 (예시)
+        const totalResponses = data.data.length;
+
+        // 각 질문별 통계 계산 (간단한 예시)
+        const dailyAmountCounts = {};
+        const sensitivitySum = data.data.reduce((sum, row) => sum + parseInt(row[1], 10), 0); // sensitivity는 두 번째 열 (인덱스 1)
+        const avgSensitivity = (sensitivitySum / totalResponses).toFixed(1);
+        const favoriteCafeCounts = {};
+        const brewTypeCounts = {};
+        const beanTypeCounts = {};
+
+        data.data.forEach(row => {
+          // row[0] = dailyAmount, row[1] = sensitivity, row[2] = favoriteCafe, row[3] = brewType, row[4] = beanType
+          dailyAmountCounts[row[0]] = (dailyAmountCounts[row[0]] || 0) + 1;
+          favoriteCafeCounts[row[2]] = (favoriteCafeCounts[row[2]] || 0) + 1;
+          brewTypeCounts[row[3]] = (brewTypeCounts[row[3]] || 0) + 1;
+          beanTypeCounts[row[4]] = (beanTypeCounts[row[4]] || 0) + 1;
+        });
+
+        // 가장 많이 선택된 옵션 찾기 헬퍼 함수
+        const getMostFrequent = (counts) => {
+            if (Object.keys(counts).length === 0) return "N/A";
+            return Object.entries(counts).sort(([,a],[,b]) => b-a)[0][0];
+        };
+
+        const mostDailyAmount = getMostFrequent(dailyAmountCounts);
+        const mostFavoriteCafe = getMostFrequent(favoriteCafeCounts);
+        const mostBrewType = getMostFrequent(brewTypeCounts);
+        const mostBeanType = getMostFrequent(beanTypeCounts);
+
+        // 설문 결과를 HTML로 구성
+        resultsContainer.innerHTML = `
+          <h3>📊 설문 결과 요약</h3>
+          <div class="results-grid">
+            <div class="result-item">
+              <strong>총 응답 수</strong>
+              <p>${totalResponses}명</p>
+            </div>
+            <div class="result-item">
+              <strong>평균 카페인 민감도</strong>
+              <p>${avgSensitivity}점 (5점 만점)</p>
+            </div>
+            <div class="result-item">
+              <strong>가장 많은 하루 커피량</strong>
+              <p>${mostDailyAmount}</p>
+            </div>
+            <div class="result-item">
+              <strong>가장 많이 언급된 카페</strong>
+              <p>${mostFavoriteCafe}</p>
+            </div>
+            <div class="result-item">
+              <strong>가장 선호하는 추출 방식</strong>
+              <p>${mostBrewType}</p>
+            </div>
+            <div class="result-item">
+              <strong>가장 선호하는 원두 타입</strong>
+              <p>${mostBeanType}</p>
+            </div>
+          </div>
+        `;
+      } else {
+        resultsContainer.innerHTML = `<p>설문 결과를 불러오는 데 실패했습니다: ${data.message || '알 수 없는 오류'}</p>`;
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch survey results:", error);
+      resultsContainer.innerHTML = `<p>설문 결과를 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+    }
+  };
+  
+  // HTML 문서 로딩이 완료되면 추천 및 결과 요약 함수를 실행합니다.
+  window.addEventListener("DOMContentLoaded", () => {
+    renderRecommendation(); // 추천 먼저 렌더링
+    renderSurveyResults();  // 그 다음 설문 결과 요약 렌더링
+  });
+}
