@@ -1,9 +1,9 @@
 // 🚀 1. 설문 제출용(POST) Google Apps Script 웹 앱 URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykGNcuxVnt732LGsylmjukHoaLbMg8EOu4_vQZ3XlB1s3sb3TeDZS3fdoQ4NhmIq9v/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzxAGrMrWVa07Yjw90reowUB46A-u3fVO60OYgg6aZu79gR8E4gqHGtxM36qNxwHM-8/exec";
 
 // 🚀 2. 설문 결과를 읽어오는용(GET) Google Apps Script 웹 앱 URL
 // (Code.gs를 doGet 포함하여 재배포한 후 얻은 URL, 1번과 동일한 URL이어야 함)
-const GOOGLE_SCRIPT_DATA_URL = "https://script.google.com/macros/s/AKfycbykGNcuxVnt732LGsylmjukHoaLbMg8EOu4_vQZ3XlB1s3sb3TeDZS3fdoQ4NhmIq9v/exec";
+const GOOGLE_SCRIPT_DATA_URL = "https://script.google.com/macros/s/AKfycbzxAGrMrWVa07Yjw90reowUB46A-u3fVO60OYgg6aZu79gR8E4gqHGtxM36qNxwHM-8/exec";
 
 
 // --- 설문 제출 로직 (index.html 용) ---
@@ -196,3 +196,4 @@ if (window.location.pathname.includes("results.html")) {
     renderSurveyResults();  // 2. 설문 결과 렌더링
   });
 }
+
