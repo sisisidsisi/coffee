@@ -3,25 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>설문 결과 - 최근 응답</title>
+    <title>📊 설문 결과 - 최근 응답</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* 페이지 기본 스타일 (사이트에 맞게 수정하세요) */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-                Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-        }
-        /* 응답 카드 스타일 */
-        .response-container {
-            max-width: 800px;
-            margin: 20px auto;
-        }
+        /* results.html 전용 추가 스타일 */
         .response-card {
             background-color: #ffffff;
             border-radius: 8px;
@@ -39,29 +25,43 @@
             min-width: 120px; /* 라벨 정렬을 위해 */
             display: inline-block;
         }
-        /* 로딩/에러 메시지 */
+        .response-card hr {
+             border: 0; 
+             border-top: 1px solid #eee;
+             margin: 15px 0;
+        }
         #loading-message {
             text-align: center;
             font-size: 1.2em;
             color: #7f8c8d;
+            padding: 40px 0;
         }
     </style>
 </head>
 <body>
 
-    <h1>📊 최근 설문 응답</h1>
+    <div class="container">
+        <header>
+            <h1>📊 최근 설문 응답 (5개)</h1>
+        </header>
 
-    <div id="results-container" class="response-container">
-        <p id="loading-message">최근 응답을 불러오는 중...</p>
+        <main>
+            <div id="results-container">
+                <p id="loading-message">최근 응답을 불러오는 중...</p>
+            </div>
+
+            <p style="text-align: center; margin-top: 30px;">
+                </p>
+        </main>
+        
+        <footer>
+             <p><a href="index.html" class="btn-link">← 설문으로 돌아가기</a></p>
+        </footer>
     </div>
 
-    <p style="text-align: center; margin-top: 30px;">
-        <a href="YOUR_ORIGINAL_EMBED_SHEET_URL">[ 📊 전체 결과 시트 보기 ]</a>
-    </p>
-
     <script>
-        // 1. [중요] 여기에 '웹에 게시'하여 생성된 CSV URL을 붙여넣으세요.
-        const GOOGLE_SHEET_CSV_URL = 'YOUR_PUBLISHED_GOOGLE_SHEET_CSV_URL';
+        // 1. [매우 중요] 여기에 '웹에 게시'하여 생성된 CSV URL을 붙여넣으세요.
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQcIR85V7onxxnnnLYcuiFmtO-7BNRoRkJWdsprJqMb9sr67huH97Cwis0ScJmOguqGHw-oy2GLbb3/pub?gid=0&single=true&output=csv';
 
         // 2. CSV 데이터를 가져와서 처리하는 함수
         async function fetchSurveyResults() {
@@ -69,17 +69,30 @@
             const loadingMessage = document.getElementById('loading-message');
 
             try {
+                // CORS 프록시가 필요할 수 있습니다. (테스트용)
+                // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                // const response = await fetch(proxyUrl + GOOGLE_SHEET_CSV_URL);
+                
+                // 직접 호출 (대부분의 '웹에 게시' 링크는 CORS를 허용합니다)
                 const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                
                 if (!response.ok) {
-                    throw new Error('데이터를 불러오는 데 실패했습니다.');
+                    throw new Error(`데이터를 불러오는 데 실패했습니다. (HTTP ${response.status})`);
                 }
                 const csvText = await response.text();
                 
-                // CSV 텍스트를 줄 단위로 나누고, 헤더(첫 줄)를 제외합니다.
-                const rows = csvText.trim().split('\n').slice(1);
+                // CSV 파싱
+                const rows = csvText.trim().split('\n');
+                
+                // 헤더(질문) 추출. 
+                // 참고: CSV 헤더는 "타임스탬프", "1. 하루에...", "2. 커피를..." 등이어야 합니다.
+                const headers = rows[0].split(',').map(h => h.replace(/"/g, ''));
+                
+                // 데이터 행만 추출
+                const dataRows = rows.slice(1);
 
-                // 최근 5개 응답만 가져오기 위해 배열의 끝에서 5개를 자르고, 순서를 뒤집습니다.
-                const recentRows = rows.slice(-5).reverse();
+                // 최근 5개 응답만 가져오기 (배열의 끝에서 5개, 순서 뒤집기)
+                const recentRows = dataRows.slice(-5).reverse();
 
                 if (recentRows.length === 0) {
                     loadingMessage.textContent = '아직 등록된 응답이 없습니다.';
@@ -91,41 +104,41 @@
 
                 // 각 응답을 HTML 카드로 만들어 삽입
                 recentRows.forEach(rowString => {
-                    // 주의: 이 간단한 파서는 응답 내용에 콤마(,)가 포함되면 깨질 수 있습니다.
-                    // (예: "스타벅스, 이디야"라고 응답한 경우)
-                    const columns = rowString.split(',');
-
-                    // CSV 열 순서에 맞게 데이터를 매칭 (타임스탬프, Q1, Q2, Q3, Q4, Q5)
-                    const timestamp = columns[0] ? columns[0].replace(/"/g, '') : 'N/A';
-                    const answer1 = columns[1] ? columns[1].replace(/"/g, '') : 'N/A';
-                    const answer2 = columns[2] ? columns[2].replace(/"/g, '') : 'N/A';
-                    const answer3 = columns[3] ? columns[3].replace(/"/g, '') : 'N/A';
-                    const answer4 = columns[4] ? columns[4].replace(/"/g, '') : 'N/A';
-                    const answer5 = columns[5] ? columns[5].replace(/"/g, '') : 'N/A';
+                    // 간단한 CSV 파서 (따옴표로 감싸진 콤마를 처리하지 못할 수 있음)
+                    const columns = rowString.split(',').map(c => c.replace(/"/g, ''));
 
                     const card = document.createElement('div');
                     card.className = 'response-card';
-                    card.innerHTML = `
-                        <p><strong>응답 시간:</strong> ${timestamp}</p>
-                        <hr style="border: 0; border-top: 1px solid #eee;">
-                        <p><strong>1. 하루 커피:</strong> ${answer1}</p>
-                        <p><strong>2. 불면/각성:</strong> ${answer2}</p>
-                        <p><strong>3. 방문 카페:</strong> ${answer3}</p>
-                        <p><strong>4. 추출 방식:</strong> ${answer4}</p>
-                        <p><strong>5. 선호 원두:</strong> ${answer5}</p>
-                    `;
+                    
+                    let cardContent = '';
+                    
+                    // 헤더(질문)와 컬럼(답변)을 매칭하여 표시
+                    headers.forEach((header, index) => {
+                        const answer = columns[index] || 'N/A';
+                        
+                        // 타임스탬프는 특별 처리
+                        if (index === 0) {
+                             cardContent += `<p><strong>응답 시간:</strong> ${answer}</p><hr>`;
+                        } else {
+                            // 질문에서 "1. ", "2. " 등 번호 부분만 잘라내기
+                            const simpleHeader = header.replace(/^\d+\.\s*/, '');
+                            cardContent += `<p><strong>${simpleHeader}:</strong> ${answer}</p>`;
+                        }
+                    });
+
+                    card.innerHTML = cardContent;
                     container.appendChild(card);
                 });
 
             } catch (error) {
                 console.error('Error fetching results:', error);
-                loadingMessage.textContent = '결과를 불러오는 중 오류가 발생했습니다.';
+                loadingMessage.textContent = `결과를 불러오는 중 오류가 발생했습니다: ${error.message}. '웹에 게시' 설정과 URL을 확인해주세요.`;
                 loadingMessage.style.color = 'red';
             }
         }
 
         // 페이지 로드 시 함수 실행
-        fetchSurveyResults();
+        document.addEventListener('DOMContentLoaded', fetchSurveyResults);
     </script>
 
 </body>
