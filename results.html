@@ -1,46 +1,132 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>커피 취향 통계 및 추천</title>
-  <link rel="stylesheet" href="style.css">
-  <script defer src="script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설문 결과 - 최근 응답</title>
+    <style>
+        /* 페이지 기본 스타일 (사이트에 맞게 수정하세요) */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        /* 응답 카드 스타일 */
+        .response-container {
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .response-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #1abc9c; /* 포인트 컬러 */
+        }
+        .response-card p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .response-card strong {
+            color: #34495e;
+            min-width: 120px; /* 라벨 정렬을 위해 */
+            display: inline-block;
+        }
+        /* 로딩/에러 메시지 */
+        #loading-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>📈 커피 취향 통계 & 추천 결과</h1>
-    <p>응답 데이터 기반 실시간 분석</p>
-  </header>
 
-  <main class="container">
-    <section>
-      <h2>자동 업데이트 차트</h2>
-      <p>Google Sheets의 응답 데이터가 자동으로 반영됩니다.</p>
+    <h1>📊 최근 설문 응답</h1>
 
-      <iframe 
-        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRQcIR85V7onxxnnnLYcuiFmtO-7BNRoRkJWdsprJqMb9sr67huH97Cwis0ScJmOguqGHw-oy2GLbb3/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"
-        width="100%" height="400" frameborder="0"></iframe>
+    <div id="results-container" class="response-container">
+        <p id="loading-message">최근 응답을 불러오는 중...</p>
+    </div>
 
-      <iframe 
-        src="hhttps://docs.google.com/spreadsheets/d/e/2PACX-1vRQcIR85V7onxxnnnLYcuiFmtO-7BNRoRkJWdsprJqMb9sr67huH97Cwis0ScJmOguqGHw-oy2GLbb3/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"
-        width="100%" height="400" frameborder="0"></iframe>
-    </section>
-
-    <!-- ☕ 자동 추천 영역 -->
-    <section id="coffee-recommendation" class="chart-box">
-      <h3>☕ 추천 커피 스타일</h3>
-      <p>데이터 분석 중...</p>
-    </section>
-
-    <p style="text-align:center; margin-top:2rem;">
-      <a href="index.html">← 설문으로 돌아가기</a>
+    <p style="text-align: center; margin-top: 30px;">
+        <a href="YOUR_ORIGINAL_EMBED_SHEET_URL">[ 📊 전체 결과 시트 보기 ]</a>
     </p>
-  </main>
 
-  <footer>
-    <p>© 2025 Coffee Insight Project</p>
-  </footer>
+    <script>
+        // 1. [중요] 여기에 '웹에 게시'하여 생성된 CSV URL을 붙여넣으세요.
+        const GOOGLE_SHEET_CSV_URL = 'YOUR_PUBLISHED_GOOGLE_SHEET_CSV_URL';
+
+        // 2. CSV 데이터를 가져와서 처리하는 함수
+        async function fetchSurveyResults() {
+            const container = document.getElementById('results-container');
+            const loadingMessage = document.getElementById('loading-message');
+
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                if (!response.ok) {
+                    throw new Error('데이터를 불러오는 데 실패했습니다.');
+                }
+                const csvText = await response.text();
+                
+                // CSV 텍스트를 줄 단위로 나누고, 헤더(첫 줄)를 제외합니다.
+                const rows = csvText.trim().split('\n').slice(1);
+
+                // 최근 5개 응답만 가져오기 위해 배열의 끝에서 5개를 자르고, 순서를 뒤집습니다.
+                const recentRows = rows.slice(-5).reverse();
+
+                if (recentRows.length === 0) {
+                    loadingMessage.textContent = '아직 등록된 응답이 없습니다.';
+                    return;
+                }
+
+                // 로딩 메시지 제거
+                loadingMessage.style.display = 'none';
+
+                // 각 응답을 HTML 카드로 만들어 삽입
+                recentRows.forEach(rowString => {
+                    // 주의: 이 간단한 파서는 응답 내용에 콤마(,)가 포함되면 깨질 수 있습니다.
+                    // (예: "스타벅스, 이디야"라고 응답한 경우)
+                    const columns = rowString.split(',');
+
+                    // CSV 열 순서에 맞게 데이터를 매칭 (타임스탬프, Q1, Q2, Q3, Q4, Q5)
+                    const timestamp = columns[0] ? columns[0].replace(/"/g, '') : 'N/A';
+                    const answer1 = columns[1] ? columns[1].replace(/"/g, '') : 'N/A';
+                    const answer2 = columns[2] ? columns[2].replace(/"/g, '') : 'N/A';
+                    const answer3 = columns[3] ? columns[3].replace(/"/g, '') : 'N/A';
+                    const answer4 = columns[4] ? columns[4].replace(/"/g, '') : 'N/A';
+                    const answer5 = columns[5] ? columns[5].replace(/"/g, '') : 'N/A';
+
+                    const card = document.createElement('div');
+                    card.className = 'response-card';
+                    card.innerHTML = `
+                        <p><strong>응답 시간:</strong> ${timestamp}</p>
+                        <hr style="border: 0; border-top: 1px solid #eee;">
+                        <p><strong>1. 하루 커피:</strong> ${answer1}</p>
+                        <p><strong>2. 불면/각성:</strong> ${answer2}</p>
+                        <p><strong>3. 방문 카페:</strong> ${answer3}</p>
+                        <p><strong>4. 추출 방식:</strong> ${answer4}</p>
+                        <p><strong>5. 선호 원두:</strong> ${answer5}</p>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Error fetching results:', error);
+                loadingMessage.textContent = '결과를 불러오는 중 오류가 발생했습니다.';
+                loadingMessage.style.color = 'red';
+            }
+        }
+
+        // 페이지 로드 시 함수 실행
+        fetchSurveyResults();
+    </script>
+
 </body>
 </html>
-
-
