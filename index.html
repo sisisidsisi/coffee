@@ -1,134 +1,65 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>☕ 나에게 맞는 커피 한 잔</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나에게 맞는 커피 한 잔 – 자동 설문</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 <body>
+  <header>
+    <h1>☕ 나에게 맞는 커피 한 잔</h1>
+    <p>카페인 민감도와 원두 취향 조사</p>
+  </header>
 
-    <div class="container">
-        <header>
-            <h1>☕ 나에게 맞는 커피 한 잔</h1>
-            <p>카페인 민감도와 원두 취향 조사</p>
-        </header>
+  <main class="container">
+    <section>
+      <h2>설문 참여하기</h2>
+      <p>응답 후 데이터는 자동으로 Google Sheets에 저장됩니다.</p>
 
-        <section class="cafe-recommendation card">
-            <h2>📍 추천 카페의 위치</h2>
-            <p>설문 결과를 바탕으로 추천하는 카페의 위치입니다.</p>
-            <p><strong>[카페 이름]</strong>: 서울특별시 중구 ...</p>
-        </section>
+      <form id="coffeeForm">
+        <label>1. 하루에 커피를 얼마나 마시나요?</label>
+        <select name="dailyAmount" required>
+          <option value="none">마시지 않는다</option>
+          <option value="1cup">1잔 이하</option>
+          <option value="2to3">2~3잔</option>
+          <option value="4plus">4잔 이상</option>
+          <option value="varies">일정하지 않다</option>
+        </select>
 
-        <main>
-            <section class="form-container card">
-                <h2>설문 참여하기</h2>
-                <p class="description">응답 후 데이터는 자동으로 Google Sheets에 저장됩니다.</p>
-                
-                <form id="coffee-form" 
-                      action="https://script.google.com/macros/s/AKfycbwKa1UJRqVGHjWG7y1rPE6QGP5xIzg4d0HM3gG7wfiw46ou6BSbGtjvOsfqVwwB8-zR/exec" 
-                      method="POST">
-                    
-                    <div class="form-group">
-                        <label for="q1">1. 하루에 커피를 얼마나 마시나요?</label>
-                        <select id="q1" name="daily_coffee">
-                            <option value="마시지 않는다">마시지 않는다</option>
-                            <option value="1잔 이하">1잔 이하</option>
-                            <option value="2~3잔">2~3잔</option>
-                            <option value="4잔 이상">4잔 이상</option>
-                            <option value="일정하지 않다">일정하지 않다</option>
-                        </select>
-                    </div>
+        <label>2. 커피를 마신 뒤 불면이나 각성 상태를 느낀 적이 있나요?</label>
+        <input type="range" name="sensitivity" min="1" max="5" value="3" step="1">
+        <div class="scale"><span>전혀 없다</span><span>항상 느낀다</span></div>
 
-                    <div class="form-group">
-                        <label>2. 커피를 마신 뒤 불면이나 각성 상태를 느낀 적이 있나요?</label>
-                        <div class="slider-container">
-                            <span>전혀 없다</span>
-                            <input type="range" id="q2" name="caffeine_sensitivity" min="1" max="5" value="3">
-                            <span>항상 느낀다</span>
-                        </div>
-                    </div>
+        <label>3. 자주 방문하는 커피 전문점은 어디인가요?</label>
+        <input type="text" name="favoriteCafe" placeholder="예: 스타벅스, 블루보틀" required>
 
-                    <div class="form-group">
-                        <label for="q3">3. 자주 방문하는 커피 전문점은 어디인가요?</label>
-                        <input type="text" id="q3" name="favorite_cafe" placeholder="예: 스타벅스, 동네 카페">
-                    </div>
+        <label>4. 어떤 커피 추출 방식을 선호하시나요?</label>
+        <select name="brewType" required>
+          <option value="drip">드립</option>
+          <option value="espresso">에스프레소</option>
+          <option value="coldbrew">콜드브루</option>
+          <option value="etc">기타</option>
+        </select>
 
-                    <div class="form-group">
-                        <label>4. 어떤 커피 추출 방식을 선호하시나요?</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="brew_method" value="드립"> 드립</label>
-                            <label><input type="radio" name="brew_method" value="에스프레소"> 에스프레소</label>
-                            <label><input type="radio" name="brew_method" value="콜드브루"> 콜드브루</label>
-                            <label><input type="radio" name="brew_method" value="기타"> 기타</label>
-                        </div>
-                    </div>
+        <label>5. 어떤 원두를 더 선호하시나요?</label>
+        <select name="beanType" required>
+          <option value="mild">마일드</option>
+          <option value="dark">다크</option>
+          <option value="decaf">디카페인</option>
+          <option value="depends">기분이나 날씨에 따라 달라짐</option>
+        </select>
 
-                    <div class="form-group">
-                        <label>5. 어떤 원두를 더 선호하시나요?</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="bean_preference" value="마일드"> 마일드</label>
-                            <label><input type="radio" name="bean_preference" value="다크"> 다크</label>
-                            <label><input type="radio" name="bean_preference" value="디카페인"> 디카페인</label>
-                            <label><input type="radio" name="bean_preference" value="기분에 따라 다름"> 기분에 따라 다름</label>
-                        </div>
-                    </div>
+        <button type="submit">제출하기</button>
+      </form>
+    </section>
 
-                    <button type="submit" class="submit-btn">제출하기</button>
-                </form>
-                <div id="form-message" style="display:none; margin-top: 15px;"></div>
-            </section>
+    <p class="link"><a href="results.html">📊 결과 보기</a></p>
+  </main>
 
-            <section class="results-link">
-                <a href="results.html" class="btn-link">📊 결과 보기</a>
-            </section>
-        </main>
-
-        <footer>
-            <p>© 2025 Coffee Insight Project</p>
-        </footer>
-    </div>
-
-    <script>
-        const form = document.getElementById('coffee-form');
-        const formMessage = document.getElementById('form-message');
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault(); // 기본 제출 동작(페이지 새로고침) 방지
-            
-            const formData = new FormData(form);
-            const submitButton = form.querySelector('.submit-btn');
-            submitButton.disabled = true;
-            submitButton.textContent = '제출 중...';
-            
-            // [수정된 fetch 로직]
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                mode: 'no-cors' // Google Apps Script 리다이렉션 오류 방지
-            })
-            .then(() => {
-                // 'no-cors' 모드에서는 응답 내용을 읽을 수 없지만,
-                // 요청이 성공적으로 전송되었다고 가정합니다.
-                formMessage.textContent = '설문이 성공적으로 제출되었습니다. 감사합니다!';
-                formMessage.style.color = 'green';
-                form.reset(); // 폼 초기화
-            })
-            .catch(error => {
-                // 이 catch는 주로 네트워크 오류 (예: URL이 잘못됨)를 잡습니다.
-                console.error('Error:', error);
-                // URL이 placeholder 그대로일 경우 이 오류가 발생합니다.
-                formMessage.textContent = '제출 중 오류가 발생했습니다: ' + error.message;
-                formMessage.style.color = 'red';
-            })
-            .finally(() => {
-                submitButton.disabled = false;
-                submitButton.textContent = '제출하기';
-                formMessage.style.display = 'block';
-            });
-        });
-    </script>
-
+  <footer>
+    <p>© 2025 Coffee Insight Project</p>
+  </footer>
 </body>
-</html>ㄹ
+</html>
