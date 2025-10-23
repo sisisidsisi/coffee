@@ -1,145 +1,34 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 설문 결과 - 최근 응답</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* results.html 전용 추가 스타일 */
-        .response-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 5px solid #1abc9c; /* 포인트 컬러 */
-        }
-        .response-card p {
-            margin: 10px 0;
-            line-height: 1.6;
-        }
-        .response-card strong {
-            color: #34495e;
-            min-width: 120px; /* 라벨 정렬을 위해 */
-            display: inline-block;
-        }
-        .response-card hr {
-             border: 0; 
-             border-top: 1px solid #eee;
-             margin: 15px 0;
-        }
-        #loading-message {
-            text-align: center;
-            font-size: 1.2em;
-            color: #7f8c8d;
-            padding: 40px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>커피 취향 통계 및 추천</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 <body>
+  <header>
+    <h1>📈 커피 취향 통계 & 추천 결과</h1>
+    <p>응답 데이터 기반 실시간 분석</p>
+  </header>
 
-    <div class="container">
-        <header>
-            <h1>📊 최근 설문 응답 (5개)</h1>
-        </header>
+  <main class="container">
 
-        <main>
-            <div id="results-container">
-                <p id="loading-message">최근 응답을 불러오는 중...</p>
-            </div>
+    <section id="franchise-recommendation" class="recommend-box">
+      </section>
 
-            <p style="text-align: center; margin-top: 30px;">
-                </p>
-        </main>
-        
-        <footer>
-             <p><a href="index.html" class="btn-link">← 설문으로 돌아가기</a></p>
-        </footer>
-    </div>
+    <section id="survey-results-summary" class="results-summary">
+      <h3>📊 설문 결과 요약</h3>
+      <p>설문 데이터를 불러오는 중...</p>
+      </section>
 
-    <script>
-        // 1. [매우 중요] 여기에 '웹에 게시'하여 생성된 CSV URL을 붙여넣으세요.
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQcIR85V7onxxnnnLYcuiFmtO-7BNRoRkJWdsprJqMb9sr67huH97Cwis0ScJmOguqGHw-oy2GLbb3/pub?gid=0&single=true&output=csv';
+    <p style="text-align:center; margin-top:2rem;">
+      <a href="index.html">← 설문으로 돌아가기</a>
+    </p>
+  </main>
 
-        // 2. CSV 데이터를 가져와서 처리하는 함수
-        async function fetchSurveyResults() {
-            const container = document.getElementById('results-container');
-            const loadingMessage = document.getElementById('loading-message');
-
-            try {
-                // CORS 프록시가 필요할 수 있습니다. (테스트용)
-                // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                // const response = await fetch(proxyUrl + GOOGLE_SHEET_CSV_URL);
-                
-                // 직접 호출 (대부분의 '웹에 게시' 링크는 CORS를 허용합니다)
-                const response = await fetch(GOOGLE_SHEET_CSV_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`데이터를 불러오는 데 실패했습니다. (HTTP ${response.status})`);
-                }
-                const csvText = await response.text();
-                
-                // CSV 파싱
-                const rows = csvText.trim().split('\n');
-                
-                // 헤더(질문) 추출. 
-                // 참고: CSV 헤더는 "타임스탬프", "1. 하루에...", "2. 커피를..." 등이어야 합니다.
-                const headers = rows[0].split(',').map(h => h.replace(/"/g, ''));
-                
-                // 데이터 행만 추출
-                const dataRows = rows.slice(1);
-
-                // 최근 5개 응답만 가져오기 (배열의 끝에서 5개, 순서 뒤집기)
-                const recentRows = dataRows.slice(-5).reverse();
-
-                if (recentRows.length === 0) {
-                    loadingMessage.textContent = '아직 등록된 응답이 없습니다.';
-                    return;
-                }
-
-                // 로딩 메시지 제거
-                loadingMessage.style.display = 'none';
-
-                // 각 응답을 HTML 카드로 만들어 삽입
-                recentRows.forEach(rowString => {
-                    // 간단한 CSV 파서 (따옴표로 감싸진 콤마를 처리하지 못할 수 있음)
-                    const columns = rowString.split(',').map(c => c.replace(/"/g, ''));
-
-                    const card = document.createElement('div');
-                    card.className = 'response-card';
-                    
-                    let cardContent = '';
-                    
-                    // 헤더(질문)와 컬럼(답변)을 매칭하여 표시
-                    headers.forEach((header, index) => {
-                        const answer = columns[index] || 'N/A';
-                        
-                        // 타임스탬프는 특별 처리
-                        if (index === 0) {
-                             cardContent += `<p><strong>응답 시간:</strong> ${answer}</p><hr>`;
-                        } else {
-                            // 질문에서 "1. ", "2. " 등 번호 부분만 잘라내기
-                            const simpleHeader = header.replace(/^\d+\.\s*/, '');
-                            cardContent += `<p><strong>${simpleHeader}:</strong> ${answer}</p>`;
-                        }
-                    });
-
-                    card.innerHTML = cardContent;
-                    container.appendChild(card);
-                });
-
-            } catch (error) {
-                console.error('Error fetching results:', error);
-                loadingMessage.textContent = `결과를 불러오는 중 오류가 발생했습니다: ${error.message}. '웹에 게시' 설정과 URL을 확인해주세요.`;
-                loadingMessage.style.color = 'red';
-            }
-        }
-
-        // 페이지 로드 시 함수 실행
-        document.addEventListener('DOMContentLoaded', fetchSurveyResults);
-    </script>
-
+  <footer>
+    <p>© 2025 Coffee Insight Project</p>
+  </footer>
 </body>
 </html>
