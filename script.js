@@ -25,7 +25,8 @@ if (form) {
       method: "POST",
       body: JSON.stringify(data),
       headers: {
-        "Content-Type": "text/plain;charset=utf-8",
+        // [수정됨] utf-d8 -> utf-8
+        "Content-Type": "text/plain;charset=utf-8", 
       },
     })
     .then(response => {
@@ -196,5 +197,3 @@ if (window.location.pathname.includes("results.html")) {
     renderSurveyResults();  // 2. 설문 결과 렌더링
   });
 }
-
-
